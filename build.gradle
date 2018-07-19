@@ -3,11 +3,11 @@
 buildscript {
     
     repositories {
-        maven {
-            url 'http://nexusbox:8090/nexus/content/groups/gradle-group/'
-        }
-        //google()
-        //jcenter()
+        //maven {
+        //    url 'http://nexusbox:8090/nexus/content/groups/gradle-group/'
+        //}
+        google()
+        jcenter()
 
     }
     dependencies {
@@ -21,11 +21,11 @@ buildscript {
 
 allprojects {
     repositories {
-        maven {
-            url 'http://nexusbox:8090/nexus/content/groups/gradle-group/'
-        }
-        //google()
-        //jcenter()
+        //maven {
+        //    url 'http://nexusbox:8090/nexus/content/groups/gradle-group/'
+        //}
+        google()
+        jcenter()
     }
 }
 
