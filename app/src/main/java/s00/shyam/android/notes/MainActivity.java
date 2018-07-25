@@ -54,8 +54,16 @@ public class MainActivity extends AppCompatActivity {
     private void LoadDummyItems() {
         NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        //RecyclerViewScrollListener listener = new RecyclerViewScrollListener();
         mRecyclerView = (RecyclerView) findViewById(R.id.note_list);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.addOnScrollListener(new RecyclerViewScrollListener() {
+            @Override
+            public void OnLoadMore(String text) {
+                Snackbar.make(mRecyclerView, text, Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 }
+
