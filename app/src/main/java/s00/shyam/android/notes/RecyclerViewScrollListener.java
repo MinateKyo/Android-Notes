@@ -16,7 +16,7 @@ public abstract class RecyclerViewScrollListener extends OnScrollListener  {
     protected RecyclerViewScrollListener() {
         i = new AtomicInteger();
         scrollSubject.observeOn(Schedulers.io())
-                .map(x -> x + Integer.toString(i.getAndIncrement()))
+                .map(x -> x)
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(x -> OnLoadMore(x));
     }
@@ -25,8 +25,9 @@ public abstract class RecyclerViewScrollListener extends OnScrollListener  {
     @Override
     public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
         super.onScrolled(recyclerView, dx, dy);
-
-        scrollSubject.onNext("Y' " + Integer.toString(dy));
+        if (dx != dy) {
+            scrollSubject.onNext("Y' " + Integer.toString(dy));
+        }
 
     }
 

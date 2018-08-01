@@ -7,9 +7,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import s00.shyam.android.notes.model.Note;
+import s00.shyam.android.notes.stub.NoteData;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void LoadDummyItems() {
-        NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this);
+        NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this, NoteData.getInstance().GetNotes());
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         //RecyclerViewScrollListener listener = new RecyclerViewScrollListener();
         mRecyclerView = (RecyclerView) findViewById(R.id.note_list);
@@ -64,6 +68,26 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(mRecyclerView, text, Snackbar.LENGTH_LONG).show();
             }
         });
+
+        ItemTouchHelper.SimpleCallback noteSwipe = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int pos = ((NoteListRecyclerAdapter.ViewHolder)viewHolder).getNotePosition();
+
+                Note deleted = NoteData.getInstance().RemoveNote(pos);
+                Snackbar.make(mRecyclerView, String.format("Deleted Note: %s", deleted.getTitle()), Snackbar.LENGTH_LONG).show();
+
+                adapter.notifyDataSetChanged();
+            }
+        };
+
+        ItemTouchHelper recyclerViewTouch = new ItemTouchHelper(noteSwipe);
+        recyclerViewTouch.attachToRecyclerView(mRecyclerView);
     }
 }
 

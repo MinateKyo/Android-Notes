@@ -13,42 +13,48 @@ public final class NoteData {
     private static final NoteData ourInstance = new NoteData();
     private List<Note> noteList;
 
-    static NoteData getInstance() {
+    public static NoteData getInstance() {
         return ourInstance;
     }
 
     private NoteData() {
         noteList = new ArrayList<>();
+        RefreshNotes();
     }
 
     public List<Note> GetNotes() {
-        noteList.addAll(GetSimpleNotes());
-        noteList.addAll(GetListNotes());
         return noteList;
     }
 
-    private List<Note> GetSimpleNotes() {
-        return Arrays.stream(SIMPLE_NOTES).collect(Collectors.toList());
+    public Note RemoveNote(int index) {
+        Note removed = null;
+        try {
+            removed = noteList.remove(index);
+        }
+
+        catch (IndexOutOfBoundsException ex) {
+            removed = null;
+        }
+
+        return removed;
     }
 
-    private List<Note> GetListNotes() {
-        return Arrays.stream(LIST_NOTES).collect(Collectors.toList());
+    private void RefreshNotes()
+    {
+        noteList.addAll(SIMPLE_NOTES);
+        noteList.addAll(LIST_NOTES);
     }
 
-    private static final Note[] SIMPLE_NOTES = {
-            new Note("Demo 1", new SimpleNote("This is a simple note")),
+    private final List<Note> SIMPLE_NOTES = Arrays.asList(new Note("Demo 1", new SimpleNote("This is a simple note")),
             new Note("Demo 2", new SimpleNote("This is a simple note")),
             new Note("Test Simple Note", new SimpleNote("This is a simple note")),
             new Note("Test 2", new SimpleNote("This is a simple note")),
-            new Note("Hello", new SimpleNote("World"))
-    };
+            new Note("Hello", new SimpleNote("World")));
 
-    private static final Note[] LIST_NOTES = {
+    private final List<Note> LIST_NOTES = Arrays.asList(
             new Note("Demo List1", new ListNote("Item1", "Item2", "Item3")),
             new Note("Shop List2", new ListNote("Item4", "Item5", "Item6")),
             new Note("Fruit List", new ListNote("Apple", "Orange", "Mango")),
-            new Note("Games", new ListNote("Fortnite", "Need For Speed", "God of War"))
-
-    };
+            new Note("Games", new ListNote("Fortnite", "Need For Speed", "God of War")));
 }
 
