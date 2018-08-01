@@ -21,9 +21,7 @@ public final class NoteListRecyclerAdapter extends RecyclerView.Adapter<NoteList
     NoteListRecyclerAdapter(Context context, List<Note> notes) {
         inflater = LayoutInflater.from(context);
         mNotes = notes;
-        //48700 * 72055 *
     }
-
 
     @Override
     public NoteListRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -36,7 +34,7 @@ public final class NoteListRecyclerAdapter extends RecyclerView.Adapter<NoteList
         Note note = mNotes.get(position);
         holder.mTitle.setText(String.format(note.getTitle()));
         holder.mContent.setText(String.format(note.getmNoteContent().GetContent().toString()));
-        holder.pos = position;
+        holder.setNotePosition(position);
     }
 
     @Override
@@ -58,6 +56,10 @@ public final class NoteListRecyclerAdapter extends RecyclerView.Adapter<NoteList
 
         public int getNotePosition() {
             return pos;
+        }
+
+        public void setNotePosition(int position) {
+            pos = position;
         }
     }
 }
