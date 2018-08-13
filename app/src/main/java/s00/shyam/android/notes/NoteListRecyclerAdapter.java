@@ -1,6 +1,7 @@
 package s00.shyam.android.notes;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,12 +14,16 @@ import java.util.List;
 import s00.shyam.android.notes.model.Note;
 import s00.shyam.android.notes.stub.NoteData;
 
+import static s00.shyam.android.notes.SimpleNoteActivity.NOTE_ID;
+
 public final class NoteListRecyclerAdapter extends RecyclerView.Adapter<NoteListRecyclerAdapter.ViewHolder> {
 
     private LayoutInflater inflater;
     private List<Note> mNotes;
+    private Context mContext;
 
     NoteListRecyclerAdapter(Context context, List<Note> notes) {
+        mContext = context;
         inflater = LayoutInflater.from(context);
         mNotes = notes;
     }
@@ -52,6 +57,12 @@ public final class NoteListRecyclerAdapter extends RecyclerView.Adapter<NoteList
             super(itemView);
             mTitle = (TextView) itemView.findViewById(R.id.note_title);
             mContent = (TextView) itemView.findViewById(R.id.note_content);
+
+            itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(mContext, SimpleNoteActivity.class);
+                intent.putExtra(NOTE_ID, pos);
+                mContext.startActivity(intent);
+            });
         }
 
         public int getNotePosition() {
