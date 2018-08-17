@@ -1,8 +1,12 @@
 package s00.shyam.android.notes;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,9 +16,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
+import s00.shyam.android.notes.model.Note;
+import s00.shyam.android.notes.stub.NoteData;
 
 public class AndroidNoteActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private RecyclerView mRecyclerView;
+    private Subject<Boolean> showProgress = PublishSubject.create();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,13 +38,8 @@ public class AndroidNoteActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show());
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -40,6 +49,12 @@ public class AndroidNoteActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        showProgress
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(x -> ToggleProgressBar(x));
+
+        LoadDummyItems();
     }
 
     @Override
@@ -97,5 +112,55 @@ public class AndroidNoteActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void ToggleProgressBar(boolean show) {
+        ProgressBar progress = (ProgressBar)findViewById(R.id.loading);
+        progress.setVisibility(View.VISIBLE);
+
+
+        new Handler().postDelayed(() -> progress.setVisibility(View.GONE),5000);
+    }
+
+    private void LoadDummyItems() {
+        NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this, NoteData.getInstance().GetNotes());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        //RecyclerViewScrollListener listener = new RecyclerViewScrollListener();
+        ProgressBar progress = (ProgressBar)findViewById(R.id.loading);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.note_list);
+        mRecyclerView.setAdapter(adapter);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.addOnScrollListener(new RecyclerViewScrollListener() {
+            @Override
+            public void OnLoadMore(String text) {
+                //Snackbar.make(mRecyclerView, text, Snackbar.LENGTH_LONG).show();
+                //progress.setVisibility(View.VISIBLE);
+
+                showProgress.onNext(progress.getVisibility() == View.GONE);
+            }
+        });
+
+
+
+        ItemTouchHelper.SimpleCallback noteSwipe = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int pos = ((NoteListRecyclerAdapter.ViewHolder)viewHolder).getNotePosition();
+
+                Note deleted = NoteData.getInstance().RemoveNote(pos);
+                Snackbar.make(mRecyclerView, String.format("Deleted Note: %s", deleted.getTitle()), Snackbar.LENGTH_LONG).show();
+
+                adapter.notifyDataSetChanged();
+            }
+        };
+
+        ItemTouchHelper recyclerViewTouch = new ItemTouchHelper(noteSwipe);
+        recyclerViewTouch.attachToRecyclerView(mRecyclerView);
     }
 }

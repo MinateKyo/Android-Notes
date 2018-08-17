@@ -5,15 +5,17 @@ import android.support.v7.widget.RecyclerView.OnScrollListener;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
-public abstract class RecyclerViewScrollListener extends OnScrollListener  {
+public abstract class RecyclerViewScrollListener extends OnScrollListener {
 
     private Subject<String> scrollSubject = PublishSubject.create();
     private AtomicInteger i;
+
     protected RecyclerViewScrollListener() {
         i = new AtomicInteger();
         scrollSubject.observeOn(Schedulers.io())
@@ -34,4 +36,3 @@ public abstract class RecyclerViewScrollListener extends OnScrollListener  {
 
     public abstract void OnLoadMore(String something);
 }
-

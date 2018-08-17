@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:visibility="visible"
     tools:openDrawer="start">
 
     <include
@@ -19,7 +20,10 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        android:visibility="visible"
         app:headerLayout="@layout/nav_header_android_note"
         app:menu="@menu/activity_android_note_drawer" />
 
 </android.support.v4.widget.DrawerLayout>
+
+
