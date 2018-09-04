@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void LoadDummyItems() {
-        NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this, NoteData.getInstance().GetNotes());
+        NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         //RecyclerViewScrollListener listener = new RecyclerViewScrollListener();
         ProgressBar progress = (ProgressBar)findViewById(R.id.loading);

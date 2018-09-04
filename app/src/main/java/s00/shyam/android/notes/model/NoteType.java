@@ -14,5 +14,6 @@ public abstract class NoteType<T> {
     protected void SetContent(T content) {
         mContent = content;
     }
+
 }
 

@@ -1,7 +1,9 @@
 package s00.shyam.android.notes;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,47 +21,53 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import s00.shyam.android.notes.model.Note;
 import s00.shyam.android.notes.stub.NoteData;
+import s00.shyam.android.notes.viewmodel.NoteViewModel;
 
 public class AndroidNoteActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private RecyclerView mRecyclerView;
     private Subject<Boolean> showProgress = PublishSubject.create();
+    private NoteViewModel viewModel;
+    private Disposable progressDisposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_android_note);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        showProgress
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(x -> ToggleProgressBar(x));
+         progressDisposable = showProgress
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(x -> ToggleProgressBar());
 
-        LoadDummyItems();
+        viewModel = ViewModelProviders.of(this).get(NoteViewModel.class);
+
+        LoadRecyclerView();
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -91,7 +99,7 @@ public class AndroidNoteActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -109,37 +117,34 @@ public class AndroidNoteActivity extends AppCompatActivity
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    private void ToggleProgressBar(boolean show) {
-        ProgressBar progress = (ProgressBar)findViewById(R.id.loading);
+    private void ToggleProgressBar() {
+        ProgressBar progress = findViewById(R.id.loading);
         progress.setVisibility(View.VISIBLE);
-
 
         new Handler().postDelayed(() -> progress.setVisibility(View.GONE),5000);
     }
 
-    private void LoadDummyItems() {
-        NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this, NoteData.getInstance().GetNotes());
+    private void LoadRecyclerView() {
+        NoteListRecyclerAdapter adapter = new NoteListRecyclerAdapter(this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        //RecyclerViewScrollListener listener = new RecyclerViewScrollListener();
-        ProgressBar progress = (ProgressBar)findViewById(R.id.loading);
+        ProgressBar progress = findViewById(R.id.loading);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.note_list);
+        mRecyclerView = findViewById(R.id.note_list);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.addOnScrollListener(new RecyclerViewScrollListener() {
             @Override
             public void OnLoadMore(String text) {
-                //Snackbar.make(mRecyclerView, text, Snackbar.LENGTH_LONG).show();
-                //progress.setVisibility(View.VISIBLE);
-
                 showProgress.onNext(progress.getVisibility() == View.GONE);
             }
         });
+
+        viewModel.getAllNotes().observe(this, notes -> adapter.setNotes(notes));
 
 
 
@@ -162,5 +167,12 @@ public class AndroidNoteActivity extends AppCompatActivity
 
         ItemTouchHelper recyclerViewTouch = new ItemTouchHelper(noteSwipe);
         recyclerViewTouch.attachToRecyclerView(mRecyclerView);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (!progressDisposable.isDisposed())
+            progressDisposable.dispose();
     }
 }
